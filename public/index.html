@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Welcome</title>
+    <script>
+        window.onload = function () {
+            if (!localStorage.getItem('isLoggedIn')) {
+                window.location.href = 'login.html';
+            } else {
+                window.location.href = 'dashboard.html';
+            }
+        };
+    </script>
+</head>
+<body>
+    <p>Redirecting...</p>
+</body>
+</html>
