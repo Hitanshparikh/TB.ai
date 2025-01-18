@@ -1,8 +1,10 @@
+import { OAuth2Client } from 'google-auth-library';
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
+// Configure your MySQL connection
 const db = mysql.createPool({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -10,36 +12,22 @@ const db = mysql.createPool({
     database: process.env.DB_NAME,
 });
 
+// Google OAuth2 client
+const client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    `${process.env.VERCEL_URL || 'http://localhost:3000'}/auth/google/callback`
+);
+
 export default async function handler(req, res) {
-    const { googleId, email, name } = req.body;
-
-    if (!googleId || !email || !name) {
-        return res.status(400).json({ message: 'Google ID, email, and name are required' });
-    }
-
-    try {
-        const [existingUser] = await db.query('SELECT * FROM users WHERE google_id = ? OR email = ?', [googleId, email]);
-
-        if (existingUser.length > 0) {
-            return res.status(200).json({ message: 'Login successful', user: existingUser[0] });
-        } else {
-            const [result] = await db.query('INSERT INTO users (google_id, name, email) VALUES (?, ?, ?)', [
-                googleId,
-                name,
-                email,
-            ]);
-
-            const newUser = {
-                id: result.insertId,
-                google_id: googleId,
-                name,
-                email,
-            };
-
-            res.status(201).json({ message: 'User registered successfully', user: newUser });
-        }
-    } catch (error) {
-        console.error('Error during Google login:', error);
-        res.status(500).json({ message: 'Internal server error' });
+    if (req.method === 'GET') {
+        // Redirect to Google's OAuth 2.0 server
+        const authUrl = client.generateAuthUrl({
+            access_type: 'offline',
+            scope: ['profile', 'email'],
+        });
+        res.redirect(authUrl);
+    } else {
+        res.status(405).json({ message: 'Method Not Allowed' });
     }
 }
