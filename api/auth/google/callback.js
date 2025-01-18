@@ -14,7 +14,7 @@ const db = mysql.createPool({
 const client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.VERCEL_URL || 'http://localhost:3000'}/auth/google/callback`
+    `${process.env.VERCEL_URL || 'https://tb.ai.hivizstudios.com/'}/auth/google/callback`
 );
 
 export default async function handler(req, res) {
